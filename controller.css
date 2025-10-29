@@ -17,13 +17,11 @@ body {
     align-items: center;
     justify-content: flex-start;
     
-    /* --- ⭐ 변경된 부분 --- */
     height: 100vh; /* 뷰포트(화면) 높이에 100% 고정 */
     box-sizing: border-box;
     overflow: hidden; /* ⭐ 페이지 전체 스크롤 '고정' (방지) */
-    padding-top: 15px; /* 상단 여백 */
-    padding-bottom: 15px; /* 하단 여백 */
-    /* --------------------- */
+    padding-top: 15px;
+    padding-bottom: 15px;
 }
 
 .container {
@@ -33,10 +31,8 @@ body {
     width: 100%;
     max-width: 400px;
     
-    /* --- ⭐ 변경된 부분 --- */
     height: 100%; /* body 높이(패딩 제외)를 100% 사용 */
     max-height: calc(100vh - 30px); /* body padding 고려 */
-    /* --------------------- */
     
     justify-content: space-between;
 }
@@ -45,28 +41,24 @@ body {
 .main-canvas-frame {
     position: relative;
     
-    /* --- ⭐ 변경된 부분: 너비 -> 높이 기준 --- */
-    /* width: 90%; (삭제) */
-    /* padding-bottom: calc(90% * 16 / 9); (삭제) */
-    
-    height: 70%; /* 컨테이너 높이의 70%를 차지 */
-    max-height: 550px; /* 프레임이 과도하게 커지는 것을 방지 (선택적) */
+    /* --- ⭐ 캔버스 크기를 줄이기 위해 70% -> 65%로 수정 --- */
+    height: 65%; /* 컨테이너 높이의 65%를 차지 */
+    max-height: 520px; /* 최대 높이도 약간 줄임 */
+    /* ----------------------------------------------- */
+
     aspect-ratio: 9 / 16; /* 9:16 비율 자동 유지 */
-    /* ----------------------------------- */
 
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    margin-bottom: 10px; /* 하단 컨트롤과의 간격 */
+    margin-bottom: 10px;
     overflow: hidden;
-    flex-shrink: 1; /* 공간이 부족할 때 유연하게 반응 (기존 0 -> 1) */
+    flex-shrink: 1; 
 }
 
-/* 캔버스 프레임 내부 (컨트롤러 배치 기준) */
 .main-canvas-frame::before {
     content: '';
     display: block;
-    /* padding-top 트릭 제거 (height를 직접 사용하므로) */
 }
 
 .scene-info {
@@ -79,7 +71,6 @@ body {
     z-index: 100;
 }
 
-/* 터치패드 래퍼 (main-canvas-frame 내부에 위치) */
 .touch-pads-wrapper {
     position: absolute;
     top: 0;
@@ -88,7 +79,6 @@ body {
     height: 100%;
 }
 
-/* 컨트롤러 (터치패드) */
 .touch-pad {
     position: absolute;
     width: 40px;
@@ -130,11 +120,9 @@ body {
     justify-content: space-around;
     align-items: flex-end;
     gap: 15px;
-    margin-top: 0; /* 상단 main-canvas-frame의 margin-bottom으로 간격 조절 */
-    flex-shrink: 0; /* 하단 컨트롤은 줄어들지 않음 */
+    margin-top: 0;
+    flex-shrink: 0;
 }
-
-/* (이하 .delete-btn, .control-group-wrapper, .control-group, .control-btn 등 나머지 스타일은 기존과 동일) */
 
 .delete-btn {
     background-color: var(--delete-button-color);
@@ -252,7 +240,6 @@ body {
 
     .main-canvas-frame {
         width: auto;
-        /* height: 100%; (삭제) -> 컨테이너 높이 100% 사용 */
         height: 100%; 
         max-height: calc(100vh - 20px);
         padding-bottom: 0;
