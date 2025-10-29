@@ -207,13 +207,13 @@ body {
 
 /* 그룹 내 버튼 ( ^, v, +, - ) */
 .control-btn {
-    width: 30px; /* ⭐ 크기 35 -> 30으로 수정 */
-    height: 30px; /* ⭐ 크기 35 -> 30으로 수정 */
+    width: 30px;
+    height: 30px;
     border: none;
     border-radius: 50%;
     background-color: transparent;
     color: white;
-    font-size: 20px; /* ⭐ 폰트 크기 22 -> 20으로 수정 */
+    font-size: 20px;
     font-weight: bold;
     line-height: 1;
     cursor: pointer;
@@ -232,9 +232,26 @@ body {
     transform: rotate(90deg);
 }
 
-.control-btn:hover:not(:disabled) { background-color: rgba(255, 255, 255, 0.2); transform: none; }
-.control-btn:active:not(:disabled) { background-color: rgba(255, 255, 255, 0.3); transform: none; box-shadow: none; }
-.control-btn:disabled { background-color: transparent; color: rgba(255, 255, 255, 0.5); cursor: not-allowed; box-shadow: none; }
+/* ⭐⭐⭐ 변경된 부분 ⭐⭐⭐ */
+/* 마우스를 올렸을 때(:hover) 배경색이 생기는 부분을 제거 */
+.control-btn:hover:not(:disabled) { 
+    /* background-color: rgba(255, 255, 255, 0.2); (제거) */
+    transform: none; 
+}
+/* 클릭하는 순간(:active)에만 배경색이 잠깐 나타나도록 함 */
+.control-btn:active:not(:disabled) { 
+    background-color: rgba(255, 255, 255, 0.3); 
+    transform: none; 
+    box-shadow: none; 
+}
+/* ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐ */
+
+.control-btn:disabled { 
+    background-color: transparent; 
+    color: rgba(255, 255, 255, 0.5); 
+    cursor: not-allowed; 
+    box-shadow: none; 
+}
 
 /* --- 가로 모드 --- */
 @media (orientation: landscape) and (max-width: 900px) {
@@ -243,20 +260,4 @@ body {
     .main-canvas-frame { width: auto; height: 100%; max-height: calc(100vh - 20px); padding-bottom: 0; aspect-ratio: 9 / 16; margin-bottom: 0; overflow: visible; }
     .main-canvas-frame::before { padding-top: 0; }
 
-    .scene-info { top: 10px; left: auto; right: 10px; transform: none; writing-mode: horizontal-tb; text-orientation: initial; margin-left: 0; }
-    
-    .bottom-controls { flex-direction: column; justify-content: flex-start; align-items: center; width: auto; margin-top: 0; gap: 20px; height: 100%; max-height: calc(100vh - 20px); }
-    
-    .delete-btn { width: 100%; max-width: 120px; padding: 12px 15px; height: auto; }
-    .delete-btn span { transform: none; }
-
-    .control-group-wrapper { flex-direction: column; padding: 0; gap: 12px; width: 100%; max-width: 120px; }
-    
-    .control-group { flex-direction: row; justify-content: space-around; gap: 8px; width: 100%; height: auto; padding: 10px; }
-    
-    .control-group p { flex-shrink: 0; width: auto; text-align: left; font-size: 14px; }
-    .control-group p span { transform: none; }
-    
-    .control-btn { width: 30px; height: 30px; font-size: 20px; } /* 가로모드에도 버튼 크기 반영 */
-    .control-btn span { transform: none; }
-}
+    .scene-info { top: 10px; left
