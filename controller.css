@@ -55,9 +55,12 @@ body {
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     margin-bottom: 10px;
-    /* ⭐ overflow: visible; 로 변경하여 자식 요소가 밖으로 나갈 수 있게 함 */
-    /* (하지만 .scene-info를 캔버스 기준 밖으로 뺐으므로 hidden 유지) */
-    overflow: hidden; 
+    
+    /* ⭐⭐⭐ 변경된 부분 ⭐⭐⭐ */
+    /* 'hidden' (숨김) -> 'visible' (보이게)로 변경 */
+    /* 텍스트가 캔버스 바깥으로 나갈 수 있도록 허용합니다. */
+    overflow: visible; 
+    
     flex-shrink: 1; 
 }
 
@@ -66,26 +69,23 @@ body {
     display: block;
 }
 
-/* ⭐ Scene 1 연결 텍스트 스타일 수정 ⭐ */
+/* Scene 1 연결 텍스트 스타일 (이전과 동일) */
 .scene-info {
     position: absolute;
     
-    /* 1. 위치: 캔버스 오른쪽 '밖', 상단 정렬 */
-    top: 15px; /* 캔버스 상단에서 15px 띄움 (이미지 참고) */
-    left: 100%; /* 캔버스 오른쪽 경계선으로 이동 */
-    margin-left: 8px; /* 캔버스 바깥으로 8px 여백 */
+    top: 15px; 
+    left: 100%; 
+    margin-left: 8px; 
     
-    /* 2. 세로쓰기 및 한글 깨짐 방지 */
-    writing-mode: vertical-rl; /* 세로쓰기 */
-    text-orientation: upright; /* ⭐ 한글/영문 모두 바로 세워서 깨짐 방지 */
+    writing-mode: vertical-rl;
+    text-orientation: upright; 
     
-    /* 3. 기타 스타일 */
     font-size: 14px;
     color: #888;
     font-weight: bold;
     z-index: 100;
-    white-space: nowrap; /* 줄바꿈 방지 */
-    transform: none; /* ⭐ 세로 중앙 정렬 제거 */
+    white-space: nowrap;
+    transform: none;
 }
 
 
@@ -95,6 +95,9 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
+    /* 텍스트가 밖으로 나갔으므로, 컨트롤러는 밖으로 나가지 않게 */
+    /* 이 래퍼에 overflow: hidden을 주는 것이 더 안전할 수 있습니다. */
+    overflow: hidden;
 }
 
 /* (이하 .touch-pad 부터 끝까지 나머지 스타일은 기존과 동일합니다) */
@@ -265,6 +268,7 @@ body {
         padding-bottom: 0;
         aspect-ratio: 9 / 16;
         margin-bottom: 0;
+        overflow: visible; /* 가로 모드에서도 동일하게 적용 */
     }
 
     .main-canvas-frame::before {
