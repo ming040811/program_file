@@ -11,7 +11,7 @@
 }
 
 body {
-    font-family: 'Noto Sans KR', sans-serif; /* ⭐ Noto Sans KR 폰트 적용 */
+    font-family: 'Noto Sans KR', sans-serif;
     margin: 0;
     padding: 0;
     background-color: var(--secondary-color);
@@ -25,7 +25,7 @@ body {
     overflow: hidden;
     padding-top: 15px;
     padding-bottom: 15px;
-    position: relative; /* scene-info의 absolute 기준점 */
+    position: relative;
 }
 
 .container {
@@ -39,7 +39,7 @@ body {
     max-height: calc(100vh - 30px);
     
     justify-content: space-between;
-    position: relative; /* scene-info가 이 컨테이너 바깥에 위치할 수 있도록 */
+    position: relative;
 }
 
 /* 흰색 9:16 비율 프레임 */
@@ -55,7 +55,9 @@ body {
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     margin-bottom: 10px;
-    overflow: hidden;
+    /* ⭐ overflow: visible; 로 변경하여 자식 요소가 밖으로 나갈 수 있게 함 */
+    /* (하지만 .scene-info를 캔버스 기준 밖으로 뺐으므로 hidden 유지) */
+    overflow: hidden; 
     flex-shrink: 1; 
 }
 
@@ -67,18 +69,23 @@ body {
 /* ⭐ Scene 1 연결 텍스트 스타일 수정 ⭐ */
 .scene-info {
     position: absolute;
-    top: 50%; /* 세로 중앙 정렬을 위해 */
-    right: 5px; /* 컨테이너 오른쪽에서 살짝 안쪽으로 */
-    transform: translateY(-50%); /* 정확한 세로 중앙 정렬 */
     
-    writing-mode: vertical-rl; /* ⭐ 세로쓰기 (오른쪽에서 왼쪽으로) */
-    text-orientation: mixed; /* 글자 방향 혼합 (기본값) */
+    /* 1. 위치: 캔버스 오른쪽 '밖', 상단 정렬 */
+    top: 15px; /* 캔버스 상단에서 15px 띄움 (이미지 참고) */
+    left: 100%; /* 캔버스 오른쪽 경계선으로 이동 */
+    margin-left: 8px; /* 캔버스 바깥으로 8px 여백 */
     
+    /* 2. 세로쓰기 및 한글 깨짐 방지 */
+    writing-mode: vertical-rl; /* 세로쓰기 */
+    text-orientation: upright; /* ⭐ 한글/영문 모두 바로 세워서 깨짐 방지 */
+    
+    /* 3. 기타 스타일 */
     font-size: 14px;
     color: #888;
     font-weight: bold;
     z-index: 100;
     white-space: nowrap; /* 줄바꿈 방지 */
+    transform: none; /* ⭐ 세로 중앙 정렬 제거 */
 }
 
 
@@ -89,6 +96,8 @@ body {
     width: 100%;
     height: 100%;
 }
+
+/* (이하 .touch-pad 부터 끝까지 나머지 스타일은 기존과 동일합니다) */
 
 .touch-pad {
     position: absolute;
@@ -264,11 +273,13 @@ body {
 
     /* 가로 모드에서 scene-info 위치 조정 */
     .scene-info {
-        top: 10px; /* 상단 고정 */
+        top: 10px; 
+        left: auto; /* left: 100% 해제 */
         right: 10px; /* 오른쪽 고정 */
-        transform: none; /* 세로 중앙 정렬 해제 */
+        transform: none; 
         writing-mode: horizontal-tb; /* 가로쓰기로 변경 */
         text-orientation: initial;
+        margin-left: 0; /* margin 해제 */
     }
 
     .bottom-controls {
