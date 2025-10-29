@@ -76,7 +76,7 @@ body {
     
     writing-mode: vertical-rl;
     
-    /* ⭐ 'Frame 3.png' 스타일 (영문 회전, 한글 바로섬) */
+    /* 'Frame 3.png' 스타일 (영문 회전, 한글 기본) */
     text-orientation: mixed; 
     
     font-size: 14px;
@@ -86,6 +86,18 @@ body {
     white-space: nowrap;
     transform: none;
 }
+
+/* ⭐⭐ 새로 추가된 부분 ⭐⭐ */
+/* 한글('연결')을 90도 강제 회전시키는 스타일 */
+.rotate-kor {
+    display: inline-block; /* transform을 적용하기 위해 */
+    transform: rotate(90deg);
+    
+    /* 회전으로 인한 간격 조정 */
+    margin-top: 8px; /* 'scene1'과의 간격 */
+    margin-right: -5px; /* 세로 정렬 보정 */
+}
+/* ⭐⭐⭐⭐⭐⭐⭐⭐⭐ */
 
 
 .touch-pads-wrapper {
@@ -280,6 +292,14 @@ body {
         text-orientation: initial;
         margin-left: 0; 
     }
+    
+    /* 가로 모드에서는 span 회전 불필요 */
+    .rotate-kor {
+        display: inline; /* 기본값으로 */
+        transform: none;
+        margin: 0;
+    }
+
 
     .bottom-controls {
         flex-direction: column;
