@@ -8,7 +8,8 @@
     --touch-color-active: #999;
     --touch-shadow: rgba(0, 0, 0, 0.2);
     
-    --delete-button-bg-light: #fff0f0; 
+    /* ⭐ 삭제 버튼 색상 #FFD2D2로 변경 */
+    --delete-button-bg-light: #FFD2D2; 
     --delete-button-text: #f56565; 
 }
 
@@ -115,7 +116,7 @@ body {
     flex-direction: row;
     justify-content: space-around;
     align-items: flex-end;
-    gap: 6px; /* ⭐ 간격 8px -> 6px로 수정 */
+    gap: 4px; /* ⭐ 간격 6px -> 4px로 수정 */
     margin-top: 0;
     flex-shrink: 0;
 }
@@ -156,7 +157,7 @@ body {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
-    gap: 6px; /* ⭐ 간격 8px -> 6px로 수정 */
+    gap: 4px; /* ⭐ 간격 6px -> 4px로 수정 */
     flex-grow: 2;
     background-color: transparent;
     border-radius: 0;
