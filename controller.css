@@ -1,8 +1,8 @@
 :root {
     --primary-color: #4F99B2;
     --secondary-color: #f4f4f4;
-    --touch-color-inactive: #cccccc; /* 비활성 컨트롤러 색상 */
-    --touch-color-active: #999; /* 활성 컨트롤러 기본 색상 */
+    --touch-color-inactive: #cccccc;
+    --touch-color-active: #999;
     --touch-shadow: rgba(0, 0, 0, 0.2);
     --delete-button-color: #f56565;
 }
@@ -15,13 +15,15 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start; /* 상단에서 시작 */
-    height: 100vh;
+    justify-content: flex-start;
+    
+    /* --- ⭐ 변경된 부분 --- */
+    height: 100vh; /* 뷰포트(화면) 높이에 100% 고정 */
     box-sizing: border-box;
-    overflow-y: auto; /* 내용이 넘칠 경우 스크롤 */
-    position: relative;
-    padding-top: 20px; /* 상단 여백 추가 */
-    padding-bottom: 20px; /* 하단 여백 추가 */
+    overflow: hidden; /* ⭐ 페이지 전체 스크롤 '고정' (방지) */
+    padding-top: 15px; /* 상단 여백 */
+    padding-bottom: 15px; /* 하단 여백 */
+    /* --------------------- */
 }
 
 .container {
@@ -29,30 +31,42 @@ body {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 400px; /* 휴대폰 세로 기준 최대 너비 */
-    height: 100%;
-    max-height: calc(100vh - 40px); /* body padding을 고려한 최대 높이 */
-    justify-content: space-between; /* 요소들을 위아래로 분산 */
+    max-width: 400px;
+    
+    /* --- ⭐ 변경된 부분 --- */
+    height: 100%; /* body 높이(패딩 제외)를 100% 사용 */
+    max-height: calc(100vh - 30px); /* body padding 고려 */
+    /* --------------------- */
+    
+    justify-content: space-between;
 }
 
 /* 흰색 9:16 비율 프레임 */
 .main-canvas-frame {
     position: relative;
-    width: 90%; /* 화면 너비에 따라 유동적 */
-    padding-bottom: calc(90% * 16 / 9); /* 9:16 비율 유지 */
+    
+    /* --- ⭐ 변경된 부분: 너비 -> 높이 기준 --- */
+    /* width: 90%; (삭제) */
+    /* padding-bottom: calc(90% * 16 / 9); (삭제) */
+    
+    height: 70%; /* 컨테이너 높이의 70%를 차지 */
+    max-height: 550px; /* 프레임이 과도하게 커지는 것을 방지 (선택적) */
+    aspect-ratio: 9 / 16; /* 9:16 비율 자동 유지 */
+    /* ----------------------------------- */
+
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    margin-bottom: 20px; /* 아래 컨트롤러와의 간격 */
-    overflow: hidden; /* 컨트롤러가 밖으로 나가지 않도록 */
-    flex-shrink: 0; /* 크기가 줄어들지 않도록 */
+    margin-bottom: 10px; /* 하단 컨트롤과의 간격 */
+    overflow: hidden;
+    flex-shrink: 1; /* 공간이 부족할 때 유연하게 반응 (기존 0 -> 1) */
 }
 
-/* 실제 내용이 들어갈 부분 (padding-bottom 트릭으로 인한 공간) */
+/* 캔버스 프레임 내부 (컨트롤러 배치 기준) */
 .main-canvas-frame::before {
     content: '';
     display: block;
-    padding-top: calc(100% * 16 / 9); /* 이 부분을 실제 이미지/캔버스 영역으로 활용 */
+    /* padding-top 트릭 제거 (height를 직접 사용하므로) */
 }
 
 .scene-info {
@@ -72,7 +86,6 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    /* border: 1px dashed blue; /* 디버깅용 */
 }
 
 /* 컨트롤러 (터치패드) */
@@ -82,30 +95,30 @@ body {
     height: 40px;
     border-radius: 50%;
     border: none;
-    background-color: var(--touch-color-inactive); /* 초기 비활성 색상 */
+    background-color: var(--touch-color-inactive);
     box-shadow: 0 0 8px 3px var(--touch-shadow);
-    color: transparent; /* 텍스트 숨김 */
+    color: transparent;
     font-size: 1px;
     cursor: grab;
     transition: background-color 0.2s, opacity 0.3s, box-shadow 0.2s;
-    opacity: 0; /* 초기에는 숨김 */
-    transform: translate(-50%, -50%); /* 정확한 중앙 정렬을 위한 offset */
-    z-index: 50; /* 이미지 위에 오도록 */
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    z-index: 50;
 }
 
 .touch-pad.active {
-    opacity: 1; /* 활성 상태일 때 나타남 */
+    opacity: 1;
     background-color: var(--touch-color-active);
 }
 
 .touch-pad.selected {
-    background-color: var(--primary-color); /* 선택 시 사진의 컨트롤러 색상 */
-    box-shadow: 0 0 15px 5px rgba(79, 153, 178, 0.7), 0 0 10px 5px var(--touch-shadow); /* 주 색상 그림자 */
-    z-index: 60; /* 선택된 컨트롤러가 맨 위로 */
+    background-color: var(--primary-color);
+    box-shadow: 0 0 15px 5px rgba(79, 153, 178, 0.7), 0 0 10px 5px var(--touch-shadow);
+    z-index: 60;
 }
 
 .touch-pad:active:not(.selected) {
-    background-color: #aaa; /* 눌렀을 때 약간 어둡게 */
+    background-color: #aaa;
 }
 
 
@@ -115,11 +128,13 @@ body {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
-    align-items: flex-end; /* 버튼 그룹과 삭제 버튼 높이 맞춤 */
+    align-items: flex-end;
     gap: 15px;
-    margin-top: 20px; /* 메인 프레임과의 간격 */
-    flex-shrink: 0; /* 크기가 줄어들지 않도록 */
+    margin-top: 0; /* 상단 main-canvas-frame의 margin-bottom으로 간격 조절 */
+    flex-shrink: 0; /* 하단 컨트롤은 줄어들지 않음 */
 }
+
+/* (이하 .delete-btn, .control-group-wrapper, .control-group, .control-btn 등 나머지 스타일은 기존과 동일) */
 
 .delete-btn {
     background-color: var(--delete-button-color);
@@ -132,7 +147,7 @@ body {
     cursor: pointer;
     transition: background-color 0.2s;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    flex-grow: 1; /* 남은 공간을 채우도록 */
+    flex-grow: 1;
     max-width: 100px;
     display: flex;
     justify-content: center;
@@ -150,20 +165,20 @@ body {
 
 .control-group-wrapper {
     display: flex;
-    flex-direction: row; /* 그룹들을 가로로 배열 */
+    flex-direction: row;
     justify-content: space-around;
     gap: 15px;
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     padding: 15px 10px;
-    flex-grow: 2; /* 삭제 버튼보다 더 많은 공간 차지 */
-    opacity: 0.4; /* 초기 비활성 상태 */
+    flex-grow: 2;
+    opacity: 0.4;
     transition: opacity 0.3s;
 }
 
 .control-group-wrapper.active {
-    opacity: 1; /* 아이템 선택 시 활성 */
+    opacity: 1;
 }
 
 .control-group {
@@ -171,7 +186,7 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 6px;
-    min-width: 60px; /* 그룹 최소 너비 */
+    min-width: 60px;
 }
 
 .control-group p {
@@ -219,7 +234,7 @@ body {
     box-shadow: none;
 }
 
-/* 모바일 가로 모드 또는 태블릿 가로 모드 */
+/* 가로 모드 (기존과 동일) */
 @media (orientation: landscape) and (max-width: 900px) {
     body {
         padding-top: 10px;
@@ -236,11 +251,12 @@ body {
     }
 
     .main-canvas-frame {
-        width: auto; /* 너비를 자동으로 맞춤 */
-        height: 100%;
-        max-height: calc(100vh - 20px); /* body padding 고려 */
-        padding-bottom: 0; /* height를 사용하므로 padding-bottom 트릭 제거 */
-        aspect-ratio: 9 / 16; /* 비율 유지 */
+        width: auto;
+        /* height: 100%; (삭제) -> 컨테이너 높이 100% 사용 */
+        height: 100%; 
+        max-height: calc(100vh - 20px);
+        padding-bottom: 0;
+        aspect-ratio: 9 / 16;
         margin-bottom: 0;
     }
 
@@ -261,26 +277,26 @@ body {
     
     .delete-btn {
         width: 100%;
-        max-width: 120px; /* 가로 모드에서 버튼 너비 조정 */
+        max-width: 120px;
         padding: 12px 15px;
     }
 
     .control-group-wrapper {
-        flex-direction: column; /* 가로 모드에서 컨트롤 그룹 세로로 배열 */
+        flex-direction: column;
         padding: 10px 15px;
         gap: 12px;
         width: 100%;
-        max-width: 120px; /* 가로 모드에서 그룹 너비 조정 */
+        max-width: 120px;
     }
     .control-group {
-        flex-direction: row; /* 각 그룹 내 버튼은 가로로 */
+        flex-direction: row;
         justify-content: space-around;
         gap: 8px;
         width: 100%;
     }
     .control-group p {
         flex-shrink: 0;
-        width: 40px; /* 텍스트 너비 고정 */
+        width: 40px;
         text-align: left;
     }
     .control-btn {
