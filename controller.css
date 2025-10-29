@@ -85,10 +85,11 @@ body {
     overflow: hidden;
 }
 
+/* ⭐ 컨트롤러(터치패드) 크기 수정 */
 .touch-pad {
     position: absolute;
-    width: 40px;
-    height: 40px;
+    width: 35px; /* 40px -> 35px */
+    height: 35px; /* 40px -> 35px */
     border-radius: 50%;
     border: none;
     background-color: var(--touch-color-inactive);
@@ -106,9 +107,8 @@ body {
 .touch-pad:active:not(.selected) { background-color: #aaa; }
 
 
-/* --- ⭐ 하단 컨트롤 영역 디자인 변경 --- */
+/* --- 하단 컨트롤 영역 (이전과 동일) --- */
 
-/* 하단 컨트롤 전체 래퍼 */
 .bottom-controls {
     width: 90%;
     display: flex;
@@ -120,7 +120,6 @@ body {
     flex-shrink: 0;
 }
 
-/* '삭제' 버튼 스타일 */
 .delete-btn {
     background-color: var(--delete-button-bg-light);
     color: var(--delete-button-text);
@@ -131,17 +130,14 @@ body {
     cursor: pointer;
     transition: background-color 0.2s;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    
     flex-grow: 1;
     max-width: 80px;
     height: 140px; 
-    
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-/* '삭제' 텍스트 90도 회전 */
 .delete-btn span {
     display: block;
     white-space: nowrap;
@@ -151,7 +147,6 @@ body {
 .delete-btn:hover { background-color: #ffe0e0; }
 .delete-btn:disabled { background-color: #f5f5f5; color: #ccc; border-color: #eee; cursor: not-allowed; }
 
-/* 컨트롤 그룹 래퍼 (정렬, 크기, 회전 묶음) */
 .control-group-wrapper {
     display: flex;
     flex-direction: row;
@@ -167,7 +162,6 @@ body {
 }
 .control-group-wrapper.active { opacity: 1; }
 
-/* '정렬', '크기', '회전' 각 그룹 (파란색 세로 막대) */
 .control-group {
     display: flex;
     flex-direction: column;
@@ -183,7 +177,6 @@ body {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-/* 그룹 내 텍스트 (정렬, 크기, 회전) */
 .control-group p {
     font-weight: bold;
     margin: 0;
@@ -197,17 +190,14 @@ body {
     overflow: hidden;
 }
 
-/* '좌우반전', '크기', '회전' 텍스트 90도 회전 */
 .control-group p span {
     display: block;
     white-space: nowrap;
     transform: rotate(90deg);
 }
 
-
-/* 그룹 내 버튼 ( ^, v, +, - ) */
 .control-btn {
-    width: 30px;
+    width: 30px; 
     height: 30px;
     border: none;
     border-radius: 50%;
@@ -226,26 +216,19 @@ body {
     flex-shrink: 0;
 }
 
-/* +, - 버튼 아이콘 텍스트 90도 회전 */
 .control-btn span {
     display: block;
     transform: rotate(90deg);
 }
 
-/* ⭐⭐⭐ 변경된 부분 ⭐⭐⭐ */
-/* 마우스를 올렸을 때(:hover) 배경색이 생기는 부분을 제거 */
 .control-btn:hover:not(:disabled) { 
-    /* background-color: rgba(255, 255, 255, 0.2); (제거) */
     transform: none; 
 }
-/* 클릭하는 순간(:active)에만 배경색이 잠깐 나타나도록 함 */
 .control-btn:active:not(:disabled) { 
     background-color: rgba(255, 255, 255, 0.3); 
     transform: none; 
     box-shadow: none; 
 }
-/* ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐ */
-
 .control-btn:disabled { 
     background-color: transparent; 
     color: rgba(255, 255, 255, 0.5); 
@@ -253,11 +236,27 @@ body {
     box-shadow: none; 
 }
 
-/* --- 가로 모드 --- */
+/* --- 가로 모드 (이전과 동일) --- */
 @media (orientation: landscape) and (max-width: 900px) {
     body { padding-top: 10px; padding-bottom: 10px; }
     .container { flex-direction: row; justify-content: center; align-items: flex-start; max-width: none; max-height: 100vh; width: 95%; gap: 20px; }
     .main-canvas-frame { width: auto; height: 100%; max-height: calc(100vh - 20px); padding-bottom: 0; aspect-ratio: 9 / 16; margin-bottom: 0; overflow: visible; }
     .main-canvas-frame::before { padding-top: 0; }
 
-    .scene-info { top: 10px; left
+    .scene-info { top: 10px; left: auto; right: 10px; transform: none; writing-mode: horizontal-tb; text-orientation: initial; margin-left: 0; }
+    
+    .bottom-controls { flex-direction: column; justify-content: flex-start; align-items: center; width: auto; margin-top: 0; gap: 20px; height: 100%; max-height: calc(100vh - 20px); }
+    
+    .delete-btn { width: 100%; max-width: 120px; padding: 12px 15px; height: auto; }
+    .delete-btn span { transform: none; }
+
+    .control-group-wrapper { flex-direction: column; padding: 0; gap: 12px; width: 100%; max-width: 120px; }
+    
+    .control-group { flex-direction: row; justify-content: space-around; gap: 8px; width: 100%; height: auto; padding: 10px; }
+    
+    .control-group p { flex-shrink: 0; width: auto; text-align: left; font-size: 14px; }
+    .control-group p span { transform: none; }
+    
+    .control-btn { width: 30px; height: 30px; font-size: 20px; }
+    .control-btn span { transform: none; }
+}
