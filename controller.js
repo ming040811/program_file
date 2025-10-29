@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 2. 터치패드 업데이트 ---
+    // --- 2. 터치패드 업데이트 (변경 없음) ---
     function updateTouchPads() {
         touchPadsWrapper.innerHTML = ''; 
 
@@ -39,28 +39,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 pad.classList.add('selected');
             }
 
-            // ⭐ 3. 클릭 (다중 선택) 이벤트 리스너 (변경 없음)
+            // 3. 클릭 (다중 선택) 이벤트 리스너 (변경 없음)
             pad.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const decoId = deco.id; // deco.id 사용
+                const decoId = deco.id; 
                 const isSelected = selectedDecoIds.includes(decoId);
 
                 if (isSelected) {
-                    // 이미 선택됨 -> 선택 해제
                     selectedDecoIds = selectedDecoIds.filter(id => id !== decoId);
                 } else {
-                    // 미선택 -> 선택 추가
                     if (selectedDecoIds.length < 2) {
                         selectedDecoIds.push(decoId);
                     } else {
-                        // 2개 초과 (가장 오래된 것 제거 후 새 것 추가)
                         selectedDecoIds.shift(); 
                         selectedDecoIds.push(decoId);
                     }
                 }
                 
                 sendMessage('DECO_SELECT_MULTI', { ids: selectedDecoIds }); 
-                updateTouchPads(); // UI 업데이트
+                updateTouchPads();
             });
 
             // 드래그 이벤트 추가
@@ -83,67 +80,88 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetPad = e.currentTarget;
         const decoId = targetPad.dataset.id;
 
-        // --- ⭐ 드래그 시작 조건 수정 ---
-        // 1. 드래그하려는 아이템이 선택 목록에 포함되어 있어야 하고,
-        // 2. 오직 1개의 아이템만 선택되어 있어야 함.
-        if (!selectedDecoIds.includes(decoId) || selectedDecoIds.length !== 1) {
-            // 이 두 조건을 만족하지 않으면 mousedown/touchstart 이벤트를 무시하고
-            // 'click' 이벤트가 선택 로직을 처리하도록 둔다.
+        // 1. 만약 선택되지 않은 패드를 드래그했다면,
+        //    선택 목록을 초기화하고 이 패드만 선택
+        if (!selectedDecoIds.includes(decoId)) {
+            selectedDecoIds = [decoId];
+            sendMessage('DECO_SELECT_MULTI', { ids: selectedDecoIds });
+            updateTouchPads(); // UI를 즉시 업데이트
+        }
+        
+        // 2. (선택이 0개면) 드래그 중지
+        if (selectedDecoIds.length === 0) {
             return; 
         }
-        // --- ⭐ 수정 끝 ---
 
         e.preventDefault();
 
         const isTouch = e.type.startsWith('touch');
-        let startX = isTouch ? e.touches[0].clientX : e.clientX;
-        let startY = isTouch ? e.touches[0].clientY : e.clientY;
-
-        let currentPadLeft = parseFloat(targetPad.style.left);
-        let currentPadTop = parseFloat(targetPad.style.top);
+        // 마우스/손가락의 '마지막' 위치를 저장 (델타 계산용)
+        let lastX = isTouch ? e.touches[0].clientX : e.clientX;
+        let lastY = isTouch ? e.touches[0].clientY : e.clientY;
 
         const frameRect = mainCanvasFrame.getBoundingClientRect();
         const frameWidth = frameRect.width;
         const frameHeight = frameRect.height;
+        
+        // 드래그할 모든 패드 요소를 미리 찾아둠
+        const padsToDrag = {};
+        for (const id of selectedDecoIds) {
+            const pad = document.getElementById(`touch-pad-${id}`);
+            if(pad) padsToDrag[id] = pad;
+        }
 
         function drag(e_move) {
             const currentX = isTouch ? e_move.touches[0].clientX : e_move.clientX;
             const currentY = isTouch ? e_move.touches[0].clientY : e_move.clientY;
 
-            const dx = currentX - startX;
-            const dy = currentY - startY;
+            // 마지막 프레임 대비 마우스/손가락 이동 거리 계산
+            const dx = currentX - lastX;
+            const dy = currentY - lastY;
 
-            let newPadLeft = currentPadLeft + dx;
-            let newPadTop = currentPadTop + dy;
+            // ⭐ 선택된 모든 패드에 이동 거리를 동일하게 적용
+            for (const id in padsToDrag) {
+                const pad = padsToDrag[id];
+                
+                // 패드의 현재 위치
+                let currentPadLeft = parseFloat(pad.style.left);
+                let currentPadTop = parseFloat(pad.style.top);
 
-            const padHalf = targetPad.offsetWidth / 2;
-            newPadLeft = Math.max(padHalf, Math.min(newPadLeft, frameWidth - padHalf));
-            newPadTop = Math.max(padHalf, Math.min(newPadTop, frameHeight - padHalf));
+                // 새 위치 계산
+                let newPadLeft = currentPadLeft + dx;
+                let newPadTop = currentPadTop + dy;
 
-            targetPad.style.left = `${newPadLeft}px`;
-            targetPad.style.top = `${newPadTop}px`;
-            
-            const newNormX = newPadLeft / frameWidth;
-            const newNormY = newPadTop / frameHeight;
+                // 경계선 처리
+                const padHalf = pad.offsetWidth / 2;
+                newPadLeft = Math.max(padHalf, Math.min(newPadLeft, frameWidth - padHalf));
+                newPadTop = Math.max(padHalf, Math.min(newPadTop, frameHeight - padHalf));
 
-            // 로컬 데이터 즉시 업데이트 (제자리 복귀 방지)
-            const deco = currentDecoList.find(d => d.id === decoId);
-            if (deco) {
-                deco.x = newNormX;
-                deco.y = newNormY;
+                // 1. 스타일 업데이트 (즉각적인 시각적 피드백)
+                pad.style.left = `${newPadLeft}px`;
+                pad.style.top = `${newPadTop}px`;
+                
+                const newNormX = newPadLeft / frameWidth;
+                const newNormY = newPadTop / frameHeight;
+
+                // 2. 로컬 데이터 업데이트 (손 뗐을 때 제자리로 안 돌아가게)
+                const deco = currentDecoList.find(d => d.id === id);
+                if (deco) {
+                    deco.x = newNormX;
+                    deco.y = newNormY;
+                }
+
+                // 3. 메인 창으로 이동 메시지 전송
+                sendMessage('DECO_CONTROL', {
+                    id: id,
+                    action: 'move',
+                    x: newNormX,
+                    y: newNormY
+                });
             }
 
-            sendMessage('DECO_CONTROL', {
-                id: decoId,
-                action: 'move',
-                x: newNormX,
-                y: newNormY
-            });
-
-            startX = currentX;
-            startY = currentY;
-            currentPadLeft = newPadLeft;
-            currentPadTop = newPadTop;
+            // 다음 프레임 계산을 위해 '마지막' 위치 업데이트
+            lastX = currentX;
+            lastY = currentY;
         }
 
         function stopDrag() {
