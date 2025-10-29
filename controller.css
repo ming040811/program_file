@@ -1,3 +1,6 @@
+/* Noto Sans KR 폰트 불러오기 */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
+
 :root {
     --primary-color: #4F99B2;
     --secondary-color: #f4f4f4;
@@ -8,7 +11,7 @@
 }
 
 body {
-    font-family: 'Malgun Gothic', sans-serif;
+    font-family: 'Noto Sans KR', sans-serif; /* ⭐ Noto Sans KR 폰트 적용 */
     margin: 0;
     padding: 0;
     background-color: var(--secondary-color);
@@ -17,11 +20,12 @@ body {
     align-items: center;
     justify-content: flex-start;
     
-    height: 100vh; /* 뷰포트(화면) 높이에 100% 고정 */
+    height: 100vh;
     box-sizing: border-box;
-    overflow: hidden; /* ⭐ 페이지 전체 스크롤 '고정' (방지) */
+    overflow: hidden;
     padding-top: 15px;
     padding-bottom: 15px;
+    position: relative; /* scene-info의 absolute 기준점 */
 }
 
 .container {
@@ -31,20 +35,19 @@ body {
     width: 100%;
     max-width: 400px;
     
-    height: 100%; /* body 높이(패딩 제외)를 100% 사용 */
-    max-height: calc(100vh - 30px); /* body padding 고려 */
+    height: 100%;
+    max-height: calc(100vh - 30px);
     
     justify-content: space-between;
+    position: relative; /* scene-info가 이 컨테이너 바깥에 위치할 수 있도록 */
 }
 
 /* 흰색 9:16 비율 프레임 */
 .main-canvas-frame {
     position: relative;
     
-    /* --- ⭐ 캔버스 크기를 줄이기 위해 70% -> 65%로 수정 --- */
-    height: 65%; /* 컨테이너 높이의 65%를 차지 */
-    max-height: 520px; /* 최대 높이도 약간 줄임 */
-    /* ----------------------------------------------- */
+    height: 65%;
+    max-height: 520px;
 
     aspect-ratio: 9 / 16; /* 9:16 비율 자동 유지 */
 
@@ -61,15 +64,23 @@ body {
     display: block;
 }
 
+/* ⭐ Scene 1 연결 텍스트 스타일 수정 ⭐ */
 .scene-info {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 50%; /* 세로 중앙 정렬을 위해 */
+    right: 5px; /* 컨테이너 오른쪽에서 살짝 안쪽으로 */
+    transform: translateY(-50%); /* 정확한 세로 중앙 정렬 */
+    
+    writing-mode: vertical-rl; /* ⭐ 세로쓰기 (오른쪽에서 왼쪽으로) */
+    text-orientation: mixed; /* 글자 방향 혼합 (기본값) */
+    
     font-size: 14px;
     color: #888;
     font-weight: bold;
     z-index: 100;
+    white-space: nowrap; /* 줄바꿈 방지 */
 }
+
 
 .touch-pads-wrapper {
     position: absolute;
@@ -249,6 +260,15 @@ body {
 
     .main-canvas-frame::before {
         padding-top: 0;
+    }
+
+    /* 가로 모드에서 scene-info 위치 조정 */
+    .scene-info {
+        top: 10px; /* 상단 고정 */
+        right: 10px; /* 오른쪽 고정 */
+        transform: none; /* 세로 중앙 정렬 해제 */
+        writing-mode: horizontal-tb; /* 가로쓰기로 변경 */
+        text-orientation: initial;
     }
 
     .bottom-controls {
