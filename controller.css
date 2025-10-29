@@ -66,33 +66,28 @@ body {
     display: block;
 }
 
-/* ⭐⭐ Scene 1 연결 텍스트 스타일 (완전히 수정) ⭐⭐ */
+/* ⭐⭐ Scene 1 연결 텍스트 스타일 (회전축 수정) ⭐⭐ */
 .scene-info {
     position: absolute;
-    /* 1. 위치: 캔버스 오른쪽 '밖', 상단 정렬 */
-    top: 15px; /* 캔버스 상단에서 15px 떨어진 곳 */
-    left: 100%; /* 캔버스 오른쪽 경계선 */
-    margin-left: 8px; /* 캔버스 바깥으로 8px 여백 */
     
-    /* 2. 가로쓰기 텍스트를 90도 회전 */
-    white-space: nowrap; /* 줄바꿈 방지 */
-    transform-origin: top left; /* 왼쪽 상단 모서리를 축으로 회전 */
+    /* 1. 위치: 회전축(bottom-left)의 위치를 지정 */
+    top: 15px; /* 축의 Y위치 (캔버스 상단에서 15px) */
+    left: 100%; /* 축의 X위치 (캔버스 오른쪽 경계) */
+    margin-left: 8px; /* 캔버스에서 8px 띄우기 */
+
+    /* 2. 회전 */
+    white-space: nowrap; 
+    /* ⭐ 회전 축: (가로)글자의 왼쪽 '하단'으로 변경 */
+    transform-origin: bottom left; 
     transform: rotate(90deg); /* 90도 회전 */
-    
-    /* 3. 불필요한 속성 제거 */
-    /* writing-mode: vertical-rl; (제거) */
-    /* text-orientation: mixed; (제거) */
-    
-    /* 4. 폰트 스타일 */
+
+    /* 3. 폰트 스타일 */
     font-size: 14px;
     color: #888;
     font-weight: bold;
     z-index: 100;
 }
 /* ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐ */
-
-
-/* (이전에 추가했던 .rotate-kor 스타일 제거) */
 
 
 .touch-pads-wrapper {
