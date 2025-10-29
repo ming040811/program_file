@@ -1,9 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 캔버스 미리보기 관련 요소 제거됨
-    const controlPanel = document.querySelector('.control-panel');
-    const touchPads = document.querySelectorAll('.touch-pad');
+    const mainCanvasFrame = document.querySelector('.main-canvas-frame');
+    const touchPadsWrapper = document.querySelector('.touch-pads-wrapper');
+    const deleteButton = document.getElementById('delete-selected-deco');
+    const controlGroupWrapper = document.querySelector('.control-group-wrapper');
 
-    let currentDecoList = []; // ID와 Index 정보 (최대 3개)
+    let currentDecoList = []; // { id, x, y, rotation, scale } (정규화된 값 0-1)
     let selectedDecoId = null;
 
     // --- 1. 메인 창으로 메시지 전송 함수 ---
@@ -13,101 +14,121 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 2. 터치패드 동적 제어 및 선택 상태 업데이트 ---
+    // --- 2. 터치패드 동적 생성 및 업데이트 ---
     function updateTouchPads() {
-        touchPads.forEach(pad => {
-            pad.classList.remove('active', 'selected');
-        });
+        touchPadsWrapper.innerHTML = ''; // 기존 터치패드 모두 제거
 
         currentDecoList.forEach((deco, index) => {
-            const padIndex = index + 1;
-            const pad = document.getElementById(`touch-pad-${padIndex}`);
-            if (pad) {
-                pad.classList.add('active'); 
-                
-                if (deco.id === selectedDecoId) {
-                    pad.classList.add('selected');
-                }
+            const pad = document.createElement('button');
+            pad.classList.add('touch-pad');
+            pad.id = `touch-pad-${deco.id}`; // 실제 ID 사용
+            pad.dataset.id = deco.id; // 데이터셋에 ID 저장
+            pad.title = `아이템 ${index + 1} 선택 및 이동`;
+
+            // 정규화된 x, y 값을 실제 프레임 픽셀 값으로 변환
+            const frameWidth = mainCanvasFrame.offsetWidth;
+            const frameHeight = mainCanvasFrame.offsetHeight;
+            const pixelX = deco.x * frameWidth;
+            const pixelY = deco.y * frameHeight;
+
+            pad.style.left = `${pixelX}px`;
+            pad.style.top = `${pixelY}px`;
+            pad.style.opacity = '1'; // active 대신 직접 opacity 설정 (항상 활성 상태)
+
+            if (deco.id === selectedDecoId) {
+                pad.classList.add('selected');
             }
+
+            // 클릭 이벤트 추가 (선택)
+            pad.addEventListener('click', (e) => {
+                e.stopPropagation(); // 부모 요소로 이벤트 전파 방지
+                if (selectedDecoId !== deco.id) {
+                    selectedDecoId = deco.id;
+                    sendMessage('DECO_SELECT', { id: selectedDecoId });
+                    updateTouchPads(); // 선택 상태 UI 업데이트
+                }
+            });
+
+            // 드래그 이벤트 추가
+            pad.addEventListener('mousedown', initDrag);
+            pad.addEventListener('touchstart', initDrag, { passive: true });
+
+            touchPadsWrapper.appendChild(pad);
         });
-        
+
         // 아이템이 선택되어 있을 때만 조작 버튼 활성화
         const isSelected = selectedDecoId !== null;
         document.querySelectorAll('.control-btn').forEach(btn => {
             btn.disabled = !isSelected;
         });
-        controlPanel.style.opacity = isSelected ? 1 : 0.4;
+        deleteButton.disabled = !isSelected;
+        controlGroupWrapper.classList.toggle('active', isSelected);
     }
 
-    // --- 3. 터치패드 클릭 (아이템 선택) 및 드래그 (이동) 이벤트 리스너 ---
-    touchPads.forEach(pad => {
-        // 아이템 선택 (클릭/터치)
-        pad.addEventListener('click', (e) => {
-            if (!pad.classList.contains('active')) return;
-            
-            const index = parseInt(pad.dataset.index);
-            const deco = currentDecoList.find((_, i) => i + 1 === index);
-
-            if (deco && selectedDecoId !== deco.id) {
-                selectedDecoId = deco.id;
-                sendMessage('DECO_SELECT', { id: selectedDecoId });
-                updateTouchPads();
-            }
-        });
-        
-        // ⭐ 터치패드 드래그(이동) 이벤트 ⭐
-        pad.addEventListener('mousedown', initDrag);
-        pad.addEventListener('touchstart', initDrag, { passive: true });
-    });
-    
-    // --- 4. 터치패드 이동 (드래그) 구현 (핵심 로직 변경) ---
+    // --- 3. 터치패드 이동 (드래그) 구현 ---
     function initDrag(e) {
         const targetPad = e.currentTarget;
-        
-        // 1. 활성화 및 선택 상태 확인
-        if (!targetPad.classList.contains('active')) return;
-        if (!targetPad.classList.contains('selected')) {
-            targetPad.click(); // 선택 후 드래그 가능하도록 선택 처리
-            return; 
+        const decoId = targetPad.dataset.id;
+
+        // 선택되지 않은 아이템을 드래그하려 할 때 먼저 선택
+        if (selectedDecoId !== decoId) {
+            targetPad.click();
+            // 선택된 후 드래그를 시작하도록 잠시 기다리거나,
+            // 이벤트를 다시 발생시키는 등의 추가 로직이 필요할 수 있음.
+            // 여기서는 일단 선택만 하고 드래그는 다음 인터랙션에서 가능하다고 가정.
+            return;
         }
 
         e.preventDefault();
-        
+
         const isTouch = e.type.startsWith('touch');
-        
-        let lastX = isTouch ? e.touches[0].clientX : e.clientX;
-        let lastY = isTouch ? e.touches[0].clientY : e.clientY;
-        
-        const style = window.getComputedStyle(targetPad);
-        // 패드의 현재 offset을 계산 (초기 left/top 값)
-        let padOffsetX = parseFloat(style.getPropertyValue('left'));
-        let padOffsetY = parseFloat(style.getPropertyValue('top'));
+        let startX = isTouch ? e.touches[0].clientX : e.clientX;
+        let startY = isTouch ? e.touches[0].clientY : e.clientY;
+
+        // 패드의 현재 위치 (mainCanvasFrame 기준 픽셀)
+        let currentPadLeft = parseFloat(targetPad.style.left);
+        let currentPadTop = parseFloat(targetPad.style.top);
+
+        // mainCanvasFrame의 경계 계산
+        const frameRect = mainCanvasFrame.getBoundingClientRect();
+        const frameLeft = frameRect.left;
+        const frameTop = frameRect.top;
+        const frameWidth = frameRect.width;
+        const frameHeight = frameRect.height;
 
         function drag(e_move) {
             const currentX = isTouch ? e_move.touches[0].clientX : e_move.clientX;
             const currentY = isTouch ? e_move.touches[0].clientY : e_move.clientY;
+
+            const dx = currentX - startX;
+            const dy = currentY - startY;
+
+            let newPadLeft = currentPadLeft + dx;
+            let newPadTop = currentPadTop + dy;
+
+            // 경계 제한: 터치패드 중앙이 프레임 안에 있도록
+            // (터치패드 크기 40px 이므로, -20px ~ (frame_dim + 20px) 범위에서
+            // 터치패드 중심이 0 ~ frame_dim 범위에 있도록)
+            const padHalf = targetPad.offsetWidth / 2;
+
+            newPadLeft = Math.max(padHalf, Math.min(newPadLeft, frameWidth - padHalf));
+            newPadTop = Math.max(padHalf, Math.min(newPadTop, frameHeight - padHalf));
+
+            targetPad.style.left = `${newPadLeft}px`;
+            targetPad.style.top = `${newPadTop}px`;
             
-            const dx = currentX - lastX; // 마우스/터치 이동 거리 (X)
-            const dy = currentY - lastY; // 마우스/터치 이동 거리 (Y)
-            
-            // 1. 터치패드 자체 위치 업데이트
-            padOffsetX += dx;
-            padOffsetY += dy;
-            
-            targetPad.style.left = padOffsetX + 'px';
-            targetPad.style.top = padOffsetY + 'px';
-            
-            // 2. 메인 창으로 아이템 이동 요청 전송
-            // (dx, dy 만큼 아이템을 픽셀 단위로 이동하도록 메인 창에 요청)
-            sendMessage('DECO_CONTROL', { 
-                id: selectedDecoId, 
-                action: 'nudge', // 새로운 액션 타입 (이동 거리를 직접 전달)
-                dx: dx,
-                dy: dy
+            // 메인 창으로 정규화된 좌표 전송 (0 ~ 1)
+            sendMessage('DECO_CONTROL', {
+                id: decoId,
+                action: 'move',
+                x: newPadLeft / frameWidth,
+                y: newPadTop / frameHeight
             });
-            
-            lastX = currentX;
-            lastY = currentY;
+
+            startX = currentX;
+            startY = currentY;
+            currentPadLeft = newPadLeft;
+            currentPadTop = newPadTop;
         }
 
         function stopDrag() {
@@ -115,9 +136,6 @@ document.addEventListener('DOMContentLoaded', () => {
             document.removeEventListener('mouseup', stopDrag);
             document.removeEventListener('touchmove', drag);
             document.removeEventListener('touchend', stopDrag);
-            
-            // 드래그가 끝난 후, 버튼을 원래의 CSS 위치로 리셋 (필요하다면)
-            // 현재는 버튼이 마지막 드래그 위치에 머무르도록 유지합니다.
         }
 
         document.addEventListener('mousemove', drag);
@@ -125,37 +143,66 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener('touchmove', drag, { passive: false });
         document.addEventListener('touchend', stopDrag);
     }
-    
-    // --- 5. 회전/크기 조절 버튼 이벤트 리스너 (이전과 동일) ---
+
+    // --- 4. 회전/크기/정렬 버튼 이벤트 리스너 ---
     document.querySelectorAll('.control-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            if (!selectedDecoId) return; 
+            if (!selectedDecoId || btn.disabled) return;
 
             const action = btn.dataset.action;
             const direction = btn.dataset.direction;
-            
-            // 메인 창으로 조작 명령 전송
+
             sendMessage('DECO_CONTROL', { id: selectedDecoId, action: action, direction: direction });
         });
     });
 
-    // --- 6. 캔버스 프리뷰 렌더링 제거됨 ---
+    // --- 5. 삭제 버튼 이벤트 리스너 ---
+    deleteButton.addEventListener('click', () => {
+        if (!selectedDecoId || deleteButton.disabled) return;
+        
+        sendMessage('DECO_DELETE', { id: selectedDecoId });
+        selectedDecoId = null; // 삭제 후 선택 해제
+        updateTouchPads(); // UI 업데이트
+    });
 
 
-    // --- 7. 메인 창으로부터 메시지 수신 처리 (양방향 동기화 핵심) ---
+    // --- 6. 메인 창으로부터 메시지 수신 처리 (양방향 동기화 핵심) ---
     window.addEventListener('message', (event) => {
+        // 보안을 위해 event.origin 확인 권장
+        // if (event.origin !== 'http://your-main-app-origin.com') return;
+
         if (event.data.type === 'DECO_LIST_UPDATE') {
             currentDecoList = event.data.data;
             selectedDecoId = event.data.selectedId;
-            
-            // 이전 단계에서 사용했던 fullDecoData 및 renderPreview 호출은 제거됨
-            
-            updateTouchPads(); 
+            updateTouchPads();
         }
     });
 
-    // --- 8. 초기 요청 ---
+    // --- 7. 초기 요청 ---
     window.onload = () => {
-        sendMessage('REQUEST_DECO_LIST');
+        // 실제 연동 시에는 이 메시지를 보냄:
+        // sendMessage('REQUEST_DECO_LIST');
+
+        // 개발 및 테스트를 위해 더미 아이템 생성 함수 호출
+        request_dummy_list();
     };
+
+
+    // --- 개발/테스트용 더미 아이템 생성 함수 (실제 연동 시 삭제하거나 주석 처리) ---
+    function request_dummy_list() {
+        console.log("더미 아이템 생성 중...");
+        currentDecoList = [
+            { id: 'item1', x: 0.25, y: 0.3, rotation: 0, scale: 1 },
+            { id: 'item2', x: 0.5, y: 0.6, rotation: 0, scale: 1 },
+            { id: 'item3', x: 0.75, y: 0.9, rotation: 0, scale: 1 }
+        ];
+        selectedDecoId = 'item1'; // 첫 번째 아이템 기본 선택
+        updateTouchPads();
+    }
+
+    // 창 크기 변경 시 터치패드 위치 재조정 (선택적)
+    window.addEventListener('resize', () => {
+        updateTouchPads(); // 리사이즈 시 컨트롤러 위치 재계산
+    });
+
 });
