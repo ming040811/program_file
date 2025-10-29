@@ -66,38 +66,33 @@ body {
     display: block;
 }
 
-/* Scene 1 연결 텍스트 스타일 */
+/* ⭐⭐ Scene 1 연결 텍스트 스타일 (완전히 수정) ⭐⭐ */
 .scene-info {
     position: absolute;
+    /* 1. 위치: 캔버스 오른쪽 '밖', 상단 정렬 */
+    top: 15px; /* 캔버스 상단에서 15px 떨어진 곳 */
+    left: 100%; /* 캔버스 오른쪽 경계선 */
+    margin-left: 8px; /* 캔버스 바깥으로 8px 여백 */
     
-    top: 15px; 
-    left: 100%; 
-    margin-left: 8px; 
+    /* 2. 가로쓰기 텍스트를 90도 회전 */
+    white-space: nowrap; /* 줄바꿈 방지 */
+    transform-origin: top left; /* 왼쪽 상단 모서리를 축으로 회전 */
+    transform: rotate(90deg); /* 90도 회전 */
     
-    writing-mode: vertical-rl;
+    /* 3. 불필요한 속성 제거 */
+    /* writing-mode: vertical-rl; (제거) */
+    /* text-orientation: mixed; (제거) */
     
-    /* 'Frame 3.png' 스타일 (영문 회전, 한글 기본) */
-    text-orientation: mixed; 
-    
+    /* 4. 폰트 스타일 */
     font-size: 14px;
     color: #888;
     font-weight: bold;
     z-index: 100;
-    white-space: nowrap;
-    transform: none;
 }
+/* ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐ */
 
-/* ⭐⭐ 새로 추가된 부분 ⭐⭐ */
-/* 한글('연결')을 90도 강제 회전시키는 스타일 */
-.rotate-kor {
-    display: inline-block; /* transform을 적용하기 위해 */
-    transform: rotate(90deg);
-    
-    /* 회전으로 인한 간격 조정 */
-    margin-top: 8px; /* 'scene1'과의 간격 */
-    margin-right: -5px; /* 세로 정렬 보정 */
-}
-/* ⭐⭐⭐⭐⭐⭐⭐⭐⭐ */
+
+/* (이전에 추가했던 .rotate-kor 스타일 제거) */
 
 
 .touch-pads-wrapper {
@@ -287,20 +282,12 @@ body {
         top: 10px; 
         left: auto; 
         right: 10px; 
-        transform: none; 
-        writing-mode: horizontal-tb; 
+        transform: none; /* 90도 회전 취소 */
+        writing-mode: horizontal-tb; /* 가로쓰기 */
         text-orientation: initial;
         margin-left: 0; 
     }
     
-    /* 가로 모드에서는 span 회전 불필요 */
-    .rotate-kor {
-        display: inline; /* 기본값으로 */
-        transform: none;
-        margin: 0;
-    }
-
-
     .bottom-controls {
         flex-direction: column;
         justify-content: flex-start;
