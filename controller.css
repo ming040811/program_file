@@ -134,7 +134,7 @@ body {
     
     flex-grow: 1;
     max-width: 80px;
-    height: 140px; /* ⭐ 높이 160 -> 140으로 원복 */
+    height: 140px; /* 높이 140px 유지 */
     
     display: flex;
     justify-content: center;
@@ -176,7 +176,7 @@ body {
     min-width: 60px;
     background-color: var(--primary-color);
     border-radius: 12px;
-    height: 140px; /* ⭐ 높이 160 -> 140으로 원복 */
+    height: 140px; /* 높이 140px 유지 */
     justify-content: space-between; 
     padding: 10px 5px;
     box-sizing: border-box;
@@ -188,7 +188,7 @@ body {
     font-weight: bold;
     margin: 0;
     color: white;
-    font-size: 12px; /* ⭐ 폰트 크기 14px -> 12px로 수정 */
+    font-size: 12px; /* 폰트 12px 유지 */
     text-align: center;
     display: flex;
     justify-content: center;
@@ -207,13 +207,13 @@ body {
 
 /* 그룹 내 버튼 ( ^, v, +, - ) */
 .control-btn {
-    width: 40px; /* ⭐ 크기 35 -> 40으로 원복 */
-    height: 40px; /* ⭐ 크기 35 -> 40으로 원복 */
+    width: 35px; /* ⭐ 크기 40 -> 35로 수정 */
+    height: 35px; /* ⭐ 크기 40 -> 35로 수정 */
     border: none;
     border-radius: 50%;
     background-color: transparent;
     color: white;
-    font-size: 24px;
+    font-size: 22px; /* ⭐ 폰트 크기 24 -> 22로 수정 */
     font-weight: bold;
     line-height: 1;
     cursor: pointer;
@@ -254,7 +254,7 @@ body {
     
     .control-group { flex-direction: row; justify-content: space-around; gap: 8px; width: 100%; height: auto; padding: 10px; }
     
-    .control-group p { flex-shrink: 0; width: auto; text-align: left; font-size: 14px; /* 가로모드 폰트 크기 원복 */ }
+    .control-group p { flex-shrink: 0; width: auto; text-align: left; font-size: 14px; }
     .control-group p span { transform: none; }
     
     .control-btn { width: 35px; height: 35px; font-size: 20px; }
