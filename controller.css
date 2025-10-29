@@ -85,11 +85,10 @@ body {
     overflow: hidden;
 }
 
-/* ⭐ 컨트롤러(터치패드) 크기 수정 */
 .touch-pad {
     position: absolute;
-    width: 35px; /* 40px -> 35px */
-    height: 35px; /* 40px -> 35px */
+    width: 35px;
+    height: 35px;
     border-radius: 50%;
     border: none;
     background-color: var(--touch-color-inactive);
@@ -107,19 +106,21 @@ body {
 .touch-pad:active:not(.selected) { background-color: #aaa; }
 
 
-/* --- 하단 컨트롤 영역 (이전과 동일) --- */
+/* --- ⭐ 하단 컨트롤 영역 디자인 변경 --- */
 
+/* 하단 컨트롤 전체 래퍼 */
 .bottom-controls {
     width: 90%;
     display: flex;
     flex-direction: row;
     justify-content: space-around;
     align-items: flex-end;
-    gap: 10px;
+    gap: 6px; /* ⭐ 간격 8px -> 6px로 수정 */
     margin-top: 0;
     flex-shrink: 0;
 }
 
+/* '삭제' 버튼 스타일 */
 .delete-btn {
     background-color: var(--delete-button-bg-light);
     color: var(--delete-button-text);
@@ -130,14 +131,17 @@ body {
     cursor: pointer;
     transition: background-color 0.2s;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    
     flex-grow: 1;
     max-width: 80px;
     height: 140px; 
+    
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
+/* '삭제' 텍스트 90도 회전 */
 .delete-btn span {
     display: block;
     white-space: nowrap;
@@ -147,11 +151,12 @@ body {
 .delete-btn:hover { background-color: #ffe0e0; }
 .delete-btn:disabled { background-color: #f5f5f5; color: #ccc; border-color: #eee; cursor: not-allowed; }
 
+/* 컨트롤 그룹 래퍼 (정렬, 크기, 회전 묶음) */
 .control-group-wrapper {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
-    gap: 10px;
+    gap: 6px; /* ⭐ 간격 8px -> 6px로 수정 */
     flex-grow: 2;
     background-color: transparent;
     border-radius: 0;
@@ -162,6 +167,7 @@ body {
 }
 .control-group-wrapper.active { opacity: 1; }
 
+/* '정렬', '크기', '회전' 각 그룹 (파란색 세로 막대) */
 .control-group {
     display: flex;
     flex-direction: column;
@@ -177,6 +183,7 @@ body {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
+/* 그룹 내 텍스트 (정렬, 크기, 회전) */
 .control-group p {
     font-weight: bold;
     margin: 0;
@@ -190,12 +197,15 @@ body {
     overflow: hidden;
 }
 
+/* '좌우반전', '크기', '회전' 텍스트 90도 회전 */
 .control-group p span {
     display: block;
     white-space: nowrap;
     transform: rotate(90deg);
 }
 
+
+/* 그룹 내 버튼 ( ^, v, +, - ) */
 .control-btn {
     width: 30px; 
     height: 30px;
@@ -216,6 +226,7 @@ body {
     flex-shrink: 0;
 }
 
+/* +, - 버튼 아이콘 텍스트 90도 회전 */
 .control-btn span {
     display: block;
     transform: rotate(90deg);
