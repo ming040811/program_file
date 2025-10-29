@@ -15,10 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 멀티터치 상태 저장 Map ---
-    // { touchId -> { pad, decoId, lastX, lastY } }
     const activeTouches = new Map();
 
-    // --- 2. 터치패드 업데이트 ---
+    // --- 2. 터치패드 업데이트 (변경 없음) ---
     function updateTouchPads() {
         touchPadsWrapper.innerHTML = ''; 
 
@@ -43,11 +42,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 pad.classList.add('selected');
             }
 
-            // --- 3. 클릭 (선택/해제) 이벤트 리스너 ---
-            // '선택'은 오직 '클릭(탭)'으로만 작동합니다.
+            // --- 3. 클릭 (선택/해제) 이벤트 리스너 (변경 없음) ---
             pad.addEventListener('click', (e) => {
                 e.stopPropagation();
-                e.preventDefault(); // mousedown 등 다른 이벤트 방지
+                e.preventDefault(); 
                 
                 const decoId = deco.id; 
                 const isSelected = selectedDecoIds.includes(decoId);
@@ -67,14 +65,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateTouchPads();
             });
 
-            // 드래그(mousedown) 이벤트는 제거 -> 터치 전용으로 변경
-            // pad.addEventListener('mousedown', initDrag); (제거)
-            // pad.addEventListener('touchstart', initDrag, { passive: true }); (제거)
-
             touchPadsWrapper.appendChild(pad);
         });
         
-        // 버튼 활성화 로직 (변경 없음)
         const isSelected = selectedDecoIds.length > 0;
         document.querySelectorAll('.control-btn').forEach(btn => {
             btn.disabled = !isSelected;
@@ -84,46 +77,46 @@ document.addEventListener('DOMContentLoaded', () => {
     } // --- updateTouchPads 끝 ---
 
 
-    // --- 4. ⭐ 멀티터치 이동 이벤트 핸들러 (새 로직) ---
-    // 부모 요소인 touchPadsWrapper에 이벤트를 등록합니다.
+    // --- 4. ⭐ 멀티터치 이동 이벤트 핸들러 (로직 수정) ---
     
     touchPadsWrapper.addEventListener('touchstart', (e) => {
-        // '클릭' 이벤트가 작동하도록 preventDefault()를 여기서 호출하지 않습니다.
-        
         const frameRect = mainCanvasFrame.getBoundingClientRect();
         const frameWidth = frameRect.width;
         const frameHeight = frameRect.height;
 
-        // 방금 시작된 터치들만 순회
         for (const touch of e.changedTouches) {
-            // 터치가 컨트롤러 위에서 시작했는지 확인
             const targetPad = touch.target.closest('.touch-pad');
+            
+            // ⭐ --- 수정된 부분 --- ⭐
+            // targetPad가 존재하고, 'selected' 목록에 포함되어 있을 때만 드래그 시작
             if (targetPad) {
-                // 터치 ID를 키로 사용하여 정보 저장
-                activeTouches.set(touch.identifier, {
-                    pad: targetPad,
-                    decoId: targetPad.dataset.id,
-                    lastX: touch.clientX,
-                    lastY: touch.clientY,
-                    frameWidth: frameWidth,
-                    frameHeight: frameHeight
-                });
+                const decoId = targetPad.dataset.id;
+                // '선택된' 아이템인지 확인
+                if (selectedDecoIds.includes(decoId)) { 
+                    // 터치 ID를 키로 사용하여 정보 저장
+                    activeTouches.set(touch.identifier, {
+                        pad: targetPad,
+                        decoId: decoId,
+                        lastX: touch.clientX,
+                        lastY: touch.clientY,
+                        frameWidth: frameWidth,
+                        frameHeight: frameHeight
+                    });
+                }
             }
+            // ⭐ --- 수정 끝 --- ⭐
         }
     }, { passive: false });
 
     touchPadsWrapper.addEventListener('touchmove', (e) => {
-        // 드래그(move)가 시작되면 스크롤 등을 막음
         e.preventDefault(); 
 
         for (const touch of e.changedTouches) {
-            // 이 터치 ID가 추적 중인 터치인지 확인
             const dragData = activeTouches.get(touch.identifier);
 
             if (dragData) {
                 const { pad, decoId, lastX, lastY, frameWidth, frameHeight } = dragData;
 
-                // 이동 거리(delta) 계산
                 const dx = touch.clientX - lastX;
                 const dy = touch.clientY - lastY;
                 
@@ -133,35 +126,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 let newPadLeft = currentPadLeft + dx;
                 let newPadTop = currentPadTop + dy;
 
-                // 경계 처리
                 const padHalf = pad.offsetWidth / 2;
                 newPadLeft = Math.max(padHalf, Math.min(newPadLeft, frameWidth - padHalf));
                 newPadTop = Math.max(padHalf, Math.min(newPadTop, frameHeight - padHalf));
 
-                // 1. 컨트롤러 위치 즉시 업데이트
                 pad.style.left = `${newPadLeft}px`;
                 pad.style.top = `${newPadTop}px`;
                 
                 const newNormX = newPadLeft / frameWidth;
                 const newNormY = newPadTop / frameHeight;
 
-                // 2. 로컬 데이터 업데이트 (손 뗐을 때 제자리로 안 돌아가게)
                 const deco = currentDecoList.find(d => d.id === decoId);
                 if (deco) { deco.x = newNormX; deco.y = newNormY; }
                 
-                // 3. 메인 창으로 메시지 전송
                 sendMessage('DECO_CONTROL', { id: decoId, action: 'move', x: newNormX, y: newNormY });
 
-                // 4. 다음 계산을 위해 'last' 위치 업데이트
                 dragData.lastX = touch.clientX;
                 dragData.lastY = touch.clientY;
             }
         }
-    }, { passive: false }); // preventDefault를 위해 passive: false
+    }, { passive: false }); 
 
     const touchEndOrCancel = (e) => {
-        // e.preventDefault();
-        // 끝난 터치들을 추적 목록에서 제거
         for (const touch of e.changedTouches) {
             activeTouches.delete(touch.identifier);
         }
