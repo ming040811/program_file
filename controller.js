@@ -4,8 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const deleteButton = document.getElementById('delete-selected-deco');
     const controlGroupWrapper = document.querySelector('.control-group-wrapper');
 
-    let currentDecoList = []; // { id, x, y, rotation, scale } (정규화된 값 0-1)
-    let selectedDecoId = null;
+    let currentDecoList = []; // { id, x, y, rotation, scale }
+    let selectedDecoIds = []; // ⭐ 다중 선택을 위해 배열로 변경
 
     // --- 1. 메인 창으로 메시지 전송 함수 ---
     function sendMessage(type, data = {}) {
@@ -16,37 +16,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 2. 터치패드 동적 생성 및 업데이트 ---
     function updateTouchPads() {
-        touchPadsWrapper.innerHTML = ''; // 기존 터치패드 모두 제거
+        touchPadsWrapper.innerHTML = ''; 
+
+        const frameWidth = mainCanvasFrame.offsetWidth;
+        const frameHeight = mainCanvasFrame.offsetHeight;
 
         currentDecoList.forEach((deco, index) => {
             const pad = document.createElement('button');
             pad.classList.add('touch-pad');
-            pad.id = `touch-pad-${deco.id}`; // 실제 ID 사용
-            pad.dataset.id = deco.id; // 데이터셋에 ID 저장
+            pad.id = `touch-pad-${deco.id}`;
+            pad.dataset.id = deco.id;
             pad.title = `아이템 ${index + 1} 선택 및 이동`;
 
-            // 정규화된 x, y 값을 실제 프레임 픽셀 값으로 변환
-            const frameWidth = mainCanvasFrame.offsetWidth;
-            const frameHeight = mainCanvasFrame.offsetHeight;
             const pixelX = deco.x * frameWidth;
             const pixelY = deco.y * frameHeight;
 
             pad.style.left = `${pixelX}px`;
             pad.style.top = `${pixelY}px`;
-            pad.style.opacity = '1'; // active 대신 직접 opacity 설정 (항상 활성 상태)
+            pad.style.opacity = '1';
 
-            if (deco.id === selectedDecoId) {
+            // ⭐ 다중 선택 확인
+            if (selectedDecoIds.includes(deco.id)) {
                 pad.classList.add('selected');
             }
 
-            // 클릭 이벤트 추가 (선택)
+            // ⭐ 3. 클릭 (다중 선택) 이벤트 리스너
             pad.addEventListener('click', (e) => {
-                e.stopPropagation(); // 부모 요소로 이벤트 전파 방지
-                if (selectedDecoId !== deco.id) {
-                    selectedDecoId = deco.id;
-                    sendMessage('DECO_SELECT', { id: selectedDecoId });
-                    updateTouchPads(); // 선택 상태 UI 업데이트
+                e.stopPropagation();
+                const decoId = deco.id;
+                const isSelected = selectedDecoIds.includes(decoId);
+
+                if (isSelected) {
+                    // 이미 선택됨 -> 선택 해제
+                    selectedDecoIds = selectedDecoIds.filter(id => id !== decoId);
+                } else {
+                    // 미선택 -> 선택 추가
+                    if (selectedDecoIds.length < 2) {
+                        selectedDecoIds.push(decoId);
+                    } else {
+                        // 2개 초과 (가장 오래된 것 제거 후 새 것 추가)
+                        selectedDecoIds.shift(); 
+                        selectedDecoIds.push(decoId);
+                    }
                 }
+                
+                // 메인 창에 배열 전송
+                sendMessage('DECO_SELECT_MULTI', { ids: selectedDecoIds }); 
+                updateTouchPads(); // UI 업데이트
             });
 
             // 드래그 이벤트 추가
@@ -56,8 +72,8 @@ document.addEventListener('DOMContentLoaded', () => {
             touchPadsWrapper.appendChild(pad);
         });
 
-        // 아이템이 선택되어 있을 때만 조작 버튼 활성화
-        const isSelected = selectedDecoId !== null;
+        // ⭐ 선택된 아이템이 1개 이상일 때 버튼 활성화
+        const isSelected = selectedDecoIds.length > 0;
         document.querySelectorAll('.control-btn').forEach(btn => {
             btn.disabled = !isSelected;
         });
@@ -65,19 +81,24 @@ document.addEventListener('DOMContentLoaded', () => {
         controlGroupWrapper.classList.toggle('active', isSelected);
     }
 
-    // --- 3. 터치패드 이동 (드래그) 구현 ---
+    // --- 4. 터치패드 이동 (드래그) 구현 ---
     function initDrag(e) {
         const targetPad = e.currentTarget;
         const decoId = targetPad.dataset.id;
 
-        // 선택되지 않은 아이템을 드래그하려 할 때 먼저 선택
-        if (selectedDecoId !== decoId) {
-            targetPad.click();
-            // 선택된 후 드래그를 시작하도록 잠시 기다리거나,
-            // 이벤트를 다시 발생시키는 등의 추가 로직이 필요할 수 있음.
-            // 여기서는 일단 선택만 하고 드래그는 다음 인터랙션에서 가능하다고 가정.
-            return;
+        // --- ⭐ 다중 선택 시 드래그 로직 수정 ---
+        // 1. 드래그 시작한 패드가 선택 목록에 없으면, 이 패드만 선택
+        if (!selectedDecoIds.includes(decoId)) {
+            selectedDecoIds = [decoId];
+            sendMessage('DECO_SELECT_MULTI', { ids: selectedDecoIds });
+            updateTouchPads();
         }
+        
+        // 2. 선택된 아이템이 1개가 아니면 (0개 또는 2개) 드래그 비활성화
+        if (selectedDecoIds.length !== 1) {
+            return; 
+        }
+        // --- ⭐ 로직 수정 끝 ---
 
         e.preventDefault();
 
@@ -85,14 +106,10 @@ document.addEventListener('DOMContentLoaded', () => {
         let startX = isTouch ? e.touches[0].clientX : e.clientX;
         let startY = isTouch ? e.touches[0].clientY : e.clientY;
 
-        // 패드의 현재 위치 (mainCanvasFrame 기준 픽셀)
         let currentPadLeft = parseFloat(targetPad.style.left);
         let currentPadTop = parseFloat(targetPad.style.top);
 
-        // mainCanvasFrame의 경계 계산
         const frameRect = mainCanvasFrame.getBoundingClientRect();
-        const frameLeft = frameRect.left;
-        const frameTop = frameRect.top;
         const frameWidth = frameRect.width;
         const frameHeight = frameRect.height;
 
@@ -106,23 +123,29 @@ document.addEventListener('DOMContentLoaded', () => {
             let newPadLeft = currentPadLeft + dx;
             let newPadTop = currentPadTop + dy;
 
-            // 경계 제한: 터치패드 중앙이 프레임 안에 있도록
-            // (터치패드 크기 40px 이므로, -20px ~ (frame_dim + 20px) 범위에서
-            // 터치패드 중심이 0 ~ frame_dim 범위에 있도록)
             const padHalf = targetPad.offsetWidth / 2;
-
             newPadLeft = Math.max(padHalf, Math.min(newPadLeft, frameWidth - padHalf));
             newPadTop = Math.max(padHalf, Math.min(newPadTop, frameHeight - padHalf));
 
             targetPad.style.left = `${newPadLeft}px`;
             targetPad.style.top = `${newPadTop}px`;
             
-            // 메인 창으로 정규화된 좌표 전송 (0 ~ 1)
+            const newNormX = newPadLeft / frameWidth;
+            const newNormY = newPadTop / frameHeight;
+
+            // ⭐ 1. 제자리 복귀 방지: 로컬 데이터 즉시 업데이트
+            const deco = currentDecoList.find(d => d.id === decoId);
+            if (deco) {
+                deco.x = newNormX;
+                deco.y = newNormY;
+            }
+
+            // 2. 메인 창으로 정규화된 좌표 전송
             sendMessage('DECO_CONTROL', {
                 id: decoId,
                 action: 'move',
-                x: newPadLeft / frameWidth,
-                y: newPadTop / frameHeight
+                x: newNormX,
+                y: newNormY
             });
 
             startX = currentX;
@@ -136,6 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.removeEventListener('mouseup', stopDrag);
             document.removeEventListener('touchmove', drag);
             document.removeEventListener('touchend', stopDrag);
+            // ⭐ 제자리로 리셋하는 코드를 넣지 않아 마지막 위치에 머무름
         }
 
         document.addEventListener('mousemove', drag);
@@ -144,51 +168,51 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener('touchend', stopDrag);
     }
 
-    // --- 4. 회전/크기/정렬 버튼 이벤트 리스너 ---
+    // --- 5. 회전/크기/정렬 버튼 이벤트 리스너 ---
     document.querySelectorAll('.control-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            if (!selectedDecoId || btn.disabled) return;
+            // ⭐ 1개 이상 선택 시 작동
+            if (selectedDecoIds.length === 0 || btn.disabled) return;
 
             const action = btn.dataset.action;
             const direction = btn.dataset.direction;
 
-            sendMessage('DECO_CONTROL', { id: selectedDecoId, action: action, direction: direction });
+            // ⭐ 선택된 모든 ID에 대해 명령 전송
+            sendMessage('DECO_CONTROL_MULTI', { 
+                ids: selectedDecoIds, 
+                action: action, 
+                direction: direction 
+            });
         });
     });
 
-    // --- 5. 삭제 버튼 이벤트 리스너 ---
+    // --- 6. 삭제 버튼 이벤트 리스너 ---
     deleteButton.addEventListener('click', () => {
-        if (!selectedDecoId || deleteButton.disabled) return;
+        if (selectedDecoIds.length === 0 || deleteButton.disabled) return;
         
-        sendMessage('DECO_DELETE', { id: selectedDecoId });
-        selectedDecoId = null; // 삭제 후 선택 해제
+        // ⭐ 선택된 모든 ID 삭제 요청
+        sendMessage('DECO_DELETE_MULTI', { ids: selectedDecoIds });
+        selectedDecoIds = []; // 로컬 선택 목록 비우기
         updateTouchPads(); // UI 업데이트
     });
 
 
-    // --- 6. 메인 창으로부터 메시지 수신 처리 (양방향 동기화 핵심) ---
+    // --- 7. 메인 창으로부터 메시지 수신 처리 ---
     window.addEventListener('message', (event) => {
-        // 보안을 위해 event.origin 확인 권장
-        // if (event.origin !== 'http://your-main-app-origin.com') return;
-
         if (event.data.type === 'DECO_LIST_UPDATE') {
             currentDecoList = event.data.data;
-            selectedDecoId = event.data.selectedId;
+            // ⭐ 메인 창에서 보낸 선택 목록(배열)으로 업데이트
+            selectedDecoIds = event.data.selectedIds || []; 
             updateTouchPads();
         }
     });
 
-    // --- 7. 초기 요청 ---
+    // --- 8. 초기 요청 ---
     window.onload = () => {
-        // 실제 연동 시에는 이 메시지를 보냄:
         // sendMessage('REQUEST_DECO_LIST');
-
-        // 개발 및 테스트를 위해 더미 아이템 생성 함수 호출
-        request_dummy_list();
+        request_dummy_list(); // 테스트용 더미
     };
 
-
-    // --- 개발/테스트용 더미 아이템 생성 함수 (실제 연동 시 삭제하거나 주석 처리) ---
     function request_dummy_list() {
         console.log("더미 아이템 생성 중...");
         currentDecoList = [
@@ -196,13 +220,11 @@ document.addEventListener('DOMContentLoaded', () => {
             { id: 'item2', x: 0.5, y: 0.6, rotation: 0, scale: 1 },
             { id: 'item3', x: 0.75, y: 0.9, rotation: 0, scale: 1 }
         ];
-        selectedDecoId = 'item1'; // 첫 번째 아이템 기본 선택
+        selectedDecoIds = ['item1']; // ⭐ 배열로 초기 선택
         updateTouchPads();
     }
 
-    // 창 크기 변경 시 터치패드 위치 재조정 (선택적)
     window.addEventListener('resize', () => {
-        updateTouchPads(); // 리사이즈 시 컨트롤러 위치 재계산
+        updateTouchPads();
     });
-
 });
