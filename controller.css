@@ -1,5 +1,4 @@
 /* Noto Sans KR 폰트 불러오기 */
-/* Noto Sans KR 폰트 불러오기 */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
 
 :root {
@@ -9,9 +8,8 @@
     --touch-color-active: #999;
     --touch-shadow: rgba(0, 0, 0, 0.2);
     
-    /* ⭐ 디자인 변경에 따른 색상 변수 추가 */
-    --delete-button-bg-light: #fff0f0; /* 삭제 버튼 배경 (연분홍) */
-    --delete-button-text: #f56565; /* 삭제 버튼 텍스트 (기존과 동일) */
+    --delete-button-bg-light: #fff0f0; 
+    --delete-button-text: #f56565; 
 }
 
 body {
@@ -60,10 +58,7 @@ body {
     flex-shrink: 1; 
 }
 
-.main-canvas-frame::before {
-    content: '';
-    display: block;
-}
+.main-canvas-frame::before { content: ''; display: block; }
 
 /* Scene 1 연결 텍스트 스타일 (이전과 동일) */
 .scene-info {
@@ -120,7 +115,7 @@ body {
     flex-direction: row;
     justify-content: space-around;
     align-items: flex-end;
-    gap: 15px;
+    gap: 10px; /* ⭐ 간격 15px -> 10px로 수정 */
     margin-top: 0;
     flex-shrink: 0;
 }
@@ -130,7 +125,7 @@ body {
     background-color: var(--delete-button-bg-light);
     color: var(--delete-button-text);
     border: 1px solid #fee;
-    border-radius: 12px; /* 둥근 사각형 */
+    border-radius: 12px;
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
@@ -138,49 +133,43 @@ body {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     
     flex-grow: 1;
-    max-width: 80px; /* 너비 */
-    height: 140px; /* 높이 */
+    max-width: 80px;
+    height: 140px;
     
     display: flex;
     justify-content: center;
     align-items: center;
     
-    /* 세로쓰기 */
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
+    /* ⭐ 세로쓰기 제거 */
+    /* writing-mode: vertical-rl; (제거) */
+    /* text-orientation: mixed; (제거) */
 }
 
-.delete-btn:hover {
-    background-color: #ffe0e0;
+/* ⭐ '삭제' 텍스트 90도 회전 */
+.delete-btn span {
+    display: block;
+    white-space: nowrap;
+    transform: rotate(90deg);
 }
 
-.delete-btn:disabled {
-    background-color: #f5f5f5;
-    color: #ccc;
-    border-color: #eee;
-    cursor: not-allowed;
-}
+.delete-btn:hover { background-color: #ffe0e0; }
+.delete-btn:disabled { background-color: #f5f5f5; color: #ccc; border-color: #eee; cursor: not-allowed; }
 
 /* 컨트롤 그룹 래퍼 (정렬, 크기, 회전 묶음) */
 .control-group-wrapper {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
-    gap: 15px;
+    gap: 10px; /* ⭐ 간격 15px -> 10px로 수정 */
     flex-grow: 2;
-    
-    /* 흰색 배경 제거 */
     background-color: transparent;
     border-radius: 0;
     box-shadow: none;
     padding: 0;
-    opacity: 1; /* 비활성 투명도 제거 */
+    opacity: 1;
     transition: none;
 }
-
-.control-group-wrapper.active {
-    opacity: 1;
-}
+.control-group-wrapper.active { opacity: 1; }
 
 /* '정렬', '크기', '회전' 각 그룹 (파란색 세로 막대) */
 .control-group {
@@ -189,16 +178,12 @@ body {
     align-items: center;
     gap: 6px;
     min-width: 60px;
-    
     background-color: var(--primary-color);
-    border-radius: 12px; /* 둥근 사각형 */
-    height: 140px; /* 높이 */
-    
-    /* 버튼-텍스트-버튼 세로 정렬 */
+    border-radius: 12px;
+    height: 140px;
     justify-content: space-between; 
-    
     padding: 10px 5px;
-    box-sizing: border-box; /* 패딩이 높이에 포함되도록 */
+    box-sizing: border-box;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
@@ -210,26 +195,38 @@ body {
     font-size: 14px;
     text-align: center;
     
-    /* 세로쓰기 */
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-    letter-spacing: 2px; /* 글자 간격 */
+    /* ⭐ 세로쓰기 제거, <span>을 중앙 정렬하기 위해 flex로 변경 */
+    /* writing-mode: vertical-rl; (제거) */
+    /* text-orientation: mixed; (제거) */
+    letter-spacing: 0; /* (간격 제거) */
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* 텍스트 영역이 버튼 사이 공간을 채우도록 */
+    flex-grow: 1; 
+    overflow: hidden; /* 회전 시 넘침 방지 */
 }
+
+/* ⭐ '좌우반전', '크기', '회전' 텍스트 90도 회전 */
+.control-group p span {
+    display: block;
+    white-space: nowrap;
+    transform: rotate(90deg);
+}
+
 
 /* 그룹 내 버튼 ( ^, v, +, - ) */
 .control-btn {
     width: 40px;
     height: 40px;
     border: none;
-    border-radius: 50%; /* 호버 영역은 동그랗게 */
-    
-    background-color: transparent; /* 배경 투명 */
+    border-radius: 50%;
+    background-color: transparent;
     color: white;
-    
-    font-size: 24px; /* 아이콘 텍스트 크기 */
+    font-size: 24px;
     font-weight: bold;
     line-height: 1;
-    
     cursor: pointer;
     transition: background-color 0.1s;
     display: flex;
@@ -237,118 +234,55 @@ body {
     align-items: center;
     padding: 0;
     box-shadow: none;
+    flex-shrink: 0; /* 버튼 크기 줄어들지 않게 */
 }
 
-/* SVG 스타일 제거 (HTML에서 SVG 태그가 삭제됨) */
-
-.control-btn:hover:not(:disabled) {
-    background-color: rgba(255, 255, 255, 0.2);
-    transform: none;
-}
-
-.control-btn:active:not(:disabled) {
-    background-color: rgba(255, 255, 255, 0.3);
-    transform: none;
-    box-shadow: none;
-}
-
-.control-btn:disabled {
-    background-color: transparent;
-    color: rgba(255, 255, 255, 0.5);
-    cursor: not-allowed;
-    box-shadow: none;
-}
+.control-btn:hover:not(:disabled) { background-color: rgba(255, 255, 255, 0.2); transform: none; }
+.control-btn:active:not(:disabled) { background-color: rgba(255, 255, 255, 0.3); transform: none; box-shadow: none; }
+.control-btn:disabled { background-color: transparent; color: rgba(255, 255, 255, 0.5); cursor: not-allowed; box-shadow: none; }
 
 /* --- 가로 모드 --- */
 @media (orientation: landscape) and (max-width: 900px) {
     body { padding-top: 10px; padding-bottom: 10px; }
-    .container {
-        flex-direction: row;
-        justify-content: center;
-        align-items: flex-start;
-        max-width: none;
-        max-height: 100vh;
-        width: 95%;
-        gap: 20px;
-    }
-    .main-canvas-frame {
-        width: auto;
-        height: 100%; 
-        max-height: calc(100vh - 20px);
-        padding-bottom: 0;
-        aspect-ratio: 9 / 16;
-        margin-bottom: 0;
-        overflow: visible; 
-    }
+    .container { flex-direction: row; justify-content: center; align-items: flex-start; max-width: none; max-height: 100vh; width: 95%; gap: 20px; }
+    .main-canvas-frame { width: auto; height: 100%; max-height: calc(100vh - 20px); padding-bottom: 0; aspect-ratio: 9 / 16; margin-bottom: 0; overflow: visible; }
     .main-canvas-frame::before { padding-top: 0; }
 
     /* 가로 모드 scene-info */
-    .scene-info {
-        top: 10px; 
-        left: auto; 
-        right: 10px; 
-        transform: none; 
-        writing-mode: horizontal-tb; 
-        text-orientation: initial;
-        margin-left: 0; 
-    }
+    .scene-info { top: 10px; left: auto; right: 10px; transform: none; writing-mode: horizontal-tb; text-orientation: initial; margin-left: 0; }
     
     /* 가로 모드 하단 컨트롤 */
-    .bottom-controls {
-        flex-direction: column;
-        justify-content: flex-start;
-        align-items: center;
-        width: auto;
-        margin-top: 0;
-        gap: 20px;
-        height: 100%;
-        max-height: calc(100vh - 20px);
-    }
+    .bottom-controls { flex-direction: column; justify-content: flex-start; align-items: center; width: auto; margin-top: 0; gap: 20px; height: 100%; max-height: calc(100vh - 20px); }
     
     /* 가로 모드 삭제 버튼 */
     .delete-btn {
         width: 100%;
         max-width: 120px;
         padding: 12px 15px;
-        height: auto; /* 높이 자동 */
-        writing-mode: horizontal-tb; /* 가로쓰기 */
-        text-orientation: initial;
+        height: auto;
+    }
+    /* ⭐ 가로 모드 삭제 텍스트 회전 해제 */
+    .delete-btn span {
+        transform: none;
     }
 
     /* 가로 모드 컨트롤 그룹 래퍼 */
-    .control-group-wrapper {
-        flex-direction: column;
-        padding: 0;
-        gap: 12px;
-        width: 100%;
-        max-width: 120px;
-    }
+    .control-group-wrapper { flex-direction: column; padding: 0; gap: 12px; width: 100%; max-width: 120px; }
     
     /* 가로 모드 컨트롤 그룹 (파란 막대) */
-    .control-group {
-        flex-direction: row; /* 가로 방향으로 변경 */
-        justify-content: space-around;
-        gap: 8px;
-        width: 100%;
-        height: auto; /* 높이 자동 */
-        padding: 10px;
-    }
+    .control-group { flex-direction: row; justify-content: space-around; gap: 8px; width: 100%; height: auto; padding: 10px; }
     
     /* 가로 모드 그룹 텍스트 */
     .control-group p {
         flex-shrink: 0;
         width: auto;
         text-align: left;
-        writing-mode: horizontal-tb; /* 가로쓰기 */
-        text-orientation: initial;
-        color: white;
-        letter-spacing: 0; /* 글자 간격 원복 */
+    }
+    /* ⭐ 가로 모드 그룹 텍스트 회전 해제 */
+    .control-group p span {
+        transform: none;
     }
     
     /* 가로 모드 그룹 버튼 */
-    .control-btn {
-        width: 35px;
-        height: 35px;
-        font-size: 20px;
-    }
+    .control-btn { width: 35px; height: 35px; font-size: 20px; }
 }
