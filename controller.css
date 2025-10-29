@@ -48,17 +48,14 @@ body {
     
     height: 65%;
     max-height: 520px;
-
-    aspect-ratio: 9 / 16; /* 9:16 비율 자동 유지 */
+    aspect-ratio: 9 / 16;
 
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     margin-bottom: 10px;
     
-    /* ⭐⭐⭐ 변경된 부분 ⭐⭐⭐ */
-    /* 'hidden' (숨김) -> 'visible' (보이게)로 변경 */
-    /* 텍스트가 캔버스 바깥으로 나갈 수 있도록 허용합니다. */
+    /* ⭐ 1. 글자가 밖에서 보이도록 'visible'로 설정 */
     overflow: visible; 
     
     flex-shrink: 1; 
@@ -69,7 +66,7 @@ body {
     display: block;
 }
 
-/* Scene 1 연결 텍스트 스타일 (이전과 동일) */
+/* Scene 1 연결 텍스트 스타일 */
 .scene-info {
     position: absolute;
     
@@ -78,6 +75,8 @@ body {
     margin-left: 8px; 
     
     writing-mode: vertical-rl;
+    
+    /* ⭐ 2. 영문/한글 모두 바로 세우기 (사진 2번 스타일) */
     text-orientation: upright; 
     
     font-size: 14px;
@@ -95,12 +94,9 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    /* 텍스트가 밖으로 나갔으므로, 컨트롤러는 밖으로 나가지 않게 */
-    /* 이 래퍼에 overflow: hidden을 주는 것이 더 안전할 수 있습니다. */
+    /* 컨트롤러는 캔버스 밖으로 나가지 않도록 hidden 설정 */
     overflow: hidden;
 }
-
-/* (이하 .touch-pad 부터 끝까지 나머지 스타일은 기존과 동일합니다) */
 
 .touch-pad {
     position: absolute;
@@ -268,7 +264,7 @@ body {
         padding-bottom: 0;
         aspect-ratio: 9 / 16;
         margin-bottom: 0;
-        overflow: visible; /* 가로 모드에서도 동일하게 적용 */
+        overflow: visible; 
     }
 
     .main-canvas-frame::before {
@@ -278,12 +274,12 @@ body {
     /* 가로 모드에서 scene-info 위치 조정 */
     .scene-info {
         top: 10px; 
-        left: auto; /* left: 100% 해제 */
-        right: 10px; /* 오른쪽 고정 */
+        left: auto; 
+        right: 10px; 
         transform: none; 
-        writing-mode: horizontal-tb; /* 가로쓰기로 변경 */
+        writing-mode: horizontal-tb; 
         text-orientation: initial;
-        margin-left: 0; /* margin 해제 */
+        margin-left: 0; 
     }
 
     .bottom-controls {
